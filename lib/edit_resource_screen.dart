@@ -62,7 +62,7 @@ class _EditResourceScreenState extends State<EditResourceScreen> {
               icon: const Icon(Icons.save_alt),
               tooltip: 'Export Json file',
               onPressed: () {
-                _exportResourceFile();
+                _displayExportMenu();
               },
             ),
             const SizedBox(width: _horizontalPadding / 2 ,)
@@ -176,16 +176,11 @@ class _EditResourceScreenState extends State<EditResourceScreen> {
     }
   }
 
-  void _exportResourceFile() async {
-    _showBottomSheet();
-    //ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Resource file saved to your machine')));
+  void _displayExportMenu() async {
+    _showBottomSheetMenuDialog(context);
   }
 
-  void _showBottomSheet() async {
-    _showDialog(context);
-  }
-
-  _showDialog(BuildContext context){
+  void _showBottomSheetMenuDialog(BuildContext context){
     showCupertinoDialog(
         context: context,
         builder: (_) => CupertinoAlertDialog(
@@ -196,7 +191,7 @@ class _EditResourceScreenState extends State<EditResourceScreen> {
               child: const Text("Flutter"),
               onPressed: () {
                 Navigator.of(context).pop();
-                saveJsonFile("Kamlesh");
+                _exportResourceFile();
               },),
             CupertinoDialogAction(
               child: const Text("Android"),
@@ -214,7 +209,17 @@ class _EditResourceScreenState extends State<EditResourceScreen> {
         ));
   }
 
-  void saveJsonFile(String data) async {
-    await FileSaver.instance.saveFile("en1", Uint8List.fromList(data.codeUnits), "json", mimeType: MimeType.JSON);
+  void _exportResourceFile() async {
+    Map<String, dynamic> resources = {};
+    for (var element in _englishResources) {
+      resources.putIfAbsent(element.resourceId, () => element.resourceText);
+    }
+    String exportString = json.encode(resources);
+    _saveJsonFile(exportString);
+  }
+
+  void _saveJsonFile(String data) async {
+    await FileSaver.instance.saveFile("en", Uint8List.fromList(data.codeUnits), "json", mimeType: MimeType.JSON);
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('File exported successfully')));
   }
 }
